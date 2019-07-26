@@ -15,8 +15,7 @@ const.pyを開き、
 apikey = '0fa59160-94cb-40ad-85fe-e7678c23f46f'
 の部分を、使用するアカウントに合わせて書き換えてください。
 
-参考：HubSpot APIキーへのアクセス
-https://knowledge.hubspot.com/jp/articles/kcs_article/integrations/how-do-i-get-my-hubspot-api-key
+参考：[HubSpot APIキーへのアクセス](https://knowledge.hubspot.com/jp/articles/kcs_article/integrations/how-do-i-get-my-hubspot-api-key)
 
 
 ## 実行コマンド

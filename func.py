@@ -5,8 +5,10 @@ import requests
 import json
 import urllib
 import re
+import csv
 from bs4 import BeautifulSoup
 import const
+
 
 hapikey = const.apikey
 
@@ -47,20 +49,75 @@ def get_all_favicons():
 
 def get_all_address():
 	company_list = get_all_companies_properties('website')
-	for company in company_list:
-		print(company['properties']['website']['value'])
-		url = 'http://' + company['properties']['website']['value']
-		try:
-			html = requests.get(url)
-		except:
+	with open('address_list.csv', 'w',) as f:
+		writer = csv.writer(f)
+		writer.writerow(["ドメイン", "ページタイトル", "住所候補"])
+		for company in company_list:
+			print(company['properties']['website']['value'])
 			url = 'http://www.' + company['properties']['website']['value']
-		html = urllib.urlopen(url)
-		soup = BeautifulSoup(html, "html.parser")
-		name = soup.title.string
-		print(name)
-		#pre = soup.find_all(string=['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'])
-		#pre = soup.find_all(text=re.compile('東'))
-		#print(pre)
+			print(url+"にアクセス".decode('utf-8'))
+			try:
+				html = urllib.urlopen(url)
+			except:
+				url = 'http://' + company['properties']['website']['value']
+				try:
+					html = urllib.urlopen(url)
+				except:
+					print("サイトが見つかりませんでした\n")
+					writer.writerow([company['properties']['website']['value'],"サイトが見つかりませんでした"])
+					continue
+			soup = BeautifulSoup(html, "html.parser")
+			name = soup.title.string if soup.title else ''
+			#エラーページにひっかかった場合に、トップページを探す特別処理
+			error_pattern = re.compile("見つかりません|ERROR|Error|error".decode('utf-8'))
+			if error_pattern.search(name):
+				url = 'http://' + company['properties']['website']['value']
+				print(url+"に改めてアクセス".decode('utf-8'))
+				try:
+					html = urllib.urlopen(url)
+				except:
+					print("サイトが見つかりませんでした\n")
+					writer.writerow([company['properties']['website']['value'],"サイトが見つかりませんでした"])
+					continue
+				soup = BeautifulSoup(html, "html.parser")
+				name = soup.title.string if soup.title else ''
+			print("--タイトル--")
+			print(name)
+
+			print("--住所のありそうなリンク--")
+			address_set = set()
+			row = [company['properties']['website']['value'], name.encode('utf-8')]
+			#住所候補を取得、表示
+			pattern = re.compile(u".+(都|道|府|県).+(区|市|町|村)")
+			for address in soup.find_all(text=pattern):
+				address_set.add(address)
+			#住所のありそうなリンク先を取得
+			linkset = set()
+			for link in soup.find_all("a",text=re.compile("会社概要|アクセス|Access|access".decode('utf-8'))):
+				if link.get('href'):
+					print(link)
+					linkset.add(link.get('href'))
+			#ページにアクセス
+			print("--住所候補--")
+			for dir in linkset:
+				url = dir if re.match("http",dir) else url+dir
+				try:
+					html = urllib.urlopen(url)
+				except:
+					continue
+				soup = BeautifulSoup(html, "html.parser")
+				#住所候補の表示
+				for address in soup.find_all(text=pattern):
+					address_set.add(address)
+			for address in address_set:
+				print(address.encode('utf-8'))
+				row.append(address.encode('utf-8'))
+			print('')
+			writer.writerow(row)
+		#for
+	#close
+	print("データをaddress_list.csvとして保存しました。")
+
 
 def reset_all_companies():
 	if const.production_mode:
@@ -78,8 +135,9 @@ def reset_all_companies():
 	set_companys()
 
 def set_companys():
-	#company_list = ['automation.jp','sbigroup.co.jp','aijus.com','hubspot.com','i.softbank.jp','tabio.com','tokyo-shoseki.co.jp','aqua-alta.jp','nadai.jp','kmecs.co.jp','nearme.jp','netcombb.co.jp','ml.nadai.jp','startbahn.jp','vonage.com','lusterworks.co.jp','airport-in-a-box.com','outsourcing.co.jp','s-cubism.jp','oaklawn.co.jp','dn.smbc.co.jp','hrm.nadai.jp','zeal-career.co.jp','higashi-nipponbank.jp','mufg.jp','escco.co.jp','diverta.co.jp','mizuhobank.co.jp','briscola.co.jp','wi2.co.jp','anicecompany.co.jp','w-design.co.jp','inctas.co.jp','totarotanaka.com','tandt1212.com','heartbeats.jp','naked.co.jp','tsunagu.info','yper.co.jp','vow-system.co.jp','47club.jp','ambient-co.jp','jp-md.co.jp','jwa.or.jp','tn-japan.co.jp','wics.co.jp','sankosc.co.jp','nmp-specialist.com','ksk-anl.com','musashino.jp','esteri.it','gmail.co','yohten.com','mail.dnp.co.jp','tokyo-chefs.jp','sbigroup.co.jp','dwango.co.jp','nii.ac.jp','bsy.jfe-eng.co.jp','villanova.edu','ksone.jp','iwanichi.co.jp','zicon.net','amperaxp.com','ims.u-tokyo.ac.jp','starkmind.co.jp','denen.com','life-book.co.jp','guitto.co.jp','hgc.jp','sbsnt.co.jp','fusenetwork.co.jp','blnk.co.jp','jp.fujitsu.com','huynq.net','broadleaf.co.jp','taishukan.co.jp','hackerx.org']
-	company_list = ['taishukan.co.jp','broadleaf.co.jp','automation.jp','sbigroup.co.jp','aijus.com','hubspot.com']
+	company_list = ['automation.jp','sbigroup.co.jp','aijus.com','hubspot.com','i.softbank.jp','tabio.com','tokyo-shoseki.co.jp','aqua-alta.jp','nadai.jp','kmecs.co.jp','nearme.jp','netcombb.co.jp','ml.nadai.jp','startbahn.jp','vonage.com','lusterworks.co.jp','airport-in-a-box.com','outsourcing.co.jp','s-cubism.jp','oaklawn.co.jp','dn.smbc.co.jp','hrm.nadai.jp','zeal-career.co.jp','higashi-nipponbank.jp','mufg.jp','escco.co.jp','diverta.co.jp','mizuhobank.co.jp','briscola.co.jp','wi2.co.jp','anicecompany.co.jp','w-design.co.jp','inctas.co.jp','totarotanaka.com','tandt1212.com','heartbeats.jp','naked.co.jp','tsunagu.info','yper.co.jp','vow-system.co.jp','47club.jp','ambient-co.jp','jp-md.co.jp','jwa.or.jp','tn-japan.co.jp','wics.co.jp','sankosc.co.jp','nmp-specialist.com','ksk-anl.com','musashino.jp','esteri.it','gmail.co','yohten.com','mail.dnp.co.jp','tokyo-chefs.jp','sbigroup.co.jp','dwango.co.jp','nii.ac.jp','bsy.jfe-eng.co.jp','villanova.edu','ksone.jp','iwanichi.co.jp','zicon.net','amperaxp.com','ims.u-tokyo.ac.jp','starkmind.co.jp','denen.com','life-book.co.jp','guitto.co.jp','hgc.jp','sbsnt.co.jp','fusenetwork.co.jp','blnk.co.jp','jp.fujitsu.com','huynq.net','broadleaf.co.jp','taishukan.co.jp','hackerx.org']
+	#部分テスト用の小リスト
+	#company_list = ['taishukan.co.jp','broadleaf.co.jp','automation.jp','sbigroup.co.jp','aijus.com','yper.co.jp','hubspot.com']
 	for company in company_list:
 		print(company)
 		url = 'https://api.hubapi.com/companies/v2/companies?hapikey=' + hapikey

@@ -32,5 +32,4 @@ else:
 	print('start main')
 	func.get_all_address()
 
-
 print('finish_all')

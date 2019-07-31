@@ -1,0 +1,5 @@
+# favicons内の .ico ファイルを無視
+/favicons/*.ico
+
+#address_list.csvを無視
+/address_list.csv

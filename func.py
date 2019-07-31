@@ -29,7 +29,7 @@ def get_all_companies_properties(target):
 		has_more = response_dict['has-more']
 		company_list.extend(response_dict['companies'])
 		parameter_dict['offset']= response_dict['offset']
-		if len(company_list) >= max_results: # Exit pagination, based on whatever value you've set your max results variable to.
+		if len(company_list) >= max_results:
 			print('maximum number of results exceeded')
 			break
 
@@ -40,7 +40,7 @@ def get_all_companies_properties(target):
 def get_all_favicons():
 	company_list = get_all_companies_properties('website')
 	for company in company_list:
-		favicon_url = 'http://www.google.com/s2/favicons?domain=www.' + company['properties']['website']['value']
+		favicon_url = 'https://www.google.com/s2/favicons?domain=' + company['properties']['website']['value']
 		icon = urllib.urlopen(favicon_url)
 		path = 'favicons/'
 		print(company['properties']['website']['value'])
@@ -97,7 +97,7 @@ def get_all_address():
 				if link.get('href'):
 					print(link)
 					linkset.add(link.get('href'))
-			#ページにアクセス
+			#各ページにアクセス
 			print("--住所候補--")
 			for dir in linkset:
 				url = dir if re.match("http",dir) else url+dir
@@ -124,7 +124,6 @@ def reset_all_companies():
 		print('Sorry. This command is forbidden in production_mode')
 		return 0
 	company_list = get_all_companies_properties('website')
-	#delete
 	for company in company_list:
 		company_id = company['companyId']
 		print(company_id)
@@ -155,6 +154,7 @@ def show_companys():
 		data += company['properties']['website']['value'] + '\',\''
 	print(data)
 
+# アイコンのデータアドレスを書き換えようとした関数。hs_avatar_filemanager_keyがREAD_ONLY_VALUEのため書き換えられなかった。
 # def update_companys():
 # 	company_list = get_all_companies_properties('hs_avatar_filemanager_key')
 # 	for company in company_list:
@@ -165,7 +165,8 @@ def show_companys():
 # 		#print(data)
 # 		r = requests.put(url,data,headers={'Content-Type': 'application/json'})
 # 		print(json.loads(r.text))
-#
+
+# 各会社に手動で設定された画像データのURLを取得する関数。ただしhubspot側で自動設定されたものは取得できない
 # def avatar_companys():
 # 	company_list = get_all_companies_properties('hs_avatar_filemanager_key')
 # 	for company in company_list:
@@ -176,5 +177,4 @@ def show_companys():
 #test
 def test():
 	print('test myfunc')
-
 	return 'test'

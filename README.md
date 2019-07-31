@@ -46,12 +46,13 @@ https://app.hubspot.com/contacts/6181502/companies/list/view/all/?
 user: ryosui.yamagata@nadai.jp  
 pass: nci1201LL  
 
-## 引き継ぎメモ
- - faviconについて  
+## 引き継ぎメモ  
+faviconについて  
   - Hubspotには、会社のアイコンを更新するAPIは存在しないかもしれない。  
   - 16*16pxの画像でよければ、googleのAPI（https://www.google.com/s2/favicons?domain= ）を使って取得できる。ただしドメイン名にwww.が必要だったり余分だったりする。  
   - アイコンが設定済みかどうかは、hs_avatar_filemanager_keyを参照すればわかるが、Hubspotによる自動設定のアイコンはこの限りではない。（func.pyコメントアウト部分に残骸を残している）  
- - 住所取得について  
+
+住所取得について  
   - 全自動でやれるほど精度を高められなかったため、候補データは全て保存する方式にした。
   - 住所を取得した際に、ゴミが混じることがある。（ex.○○県○○市でイベントを行います）
   - 大企業では、会社概要ページに本社の住所と支社の住所が同時に載っていることがよくある。（本社という文字列を参照すべき？）
